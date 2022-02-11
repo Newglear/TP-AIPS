@@ -24,7 +24,7 @@ for (i=0;i<lg;i++) message[i] = motif;}
 
 void afficher_message(char *message, int lg) {
 int i;
-printf("message construit : ");
+//printf("message construit : ");
 for (i=0;i<lg;i++) printf("%c", message[i]); printf("\n");}
 
 void UDP_source(int port,int nb_msg, int longueur, char* hostName){ 
@@ -53,10 +53,15 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
     nb_msg = 10; 
     int sent;
     char message[longueur] ;
+    printf("SOURCE: lg_msg_emis= %d , port= %d, nb_evois= %d, TP =UDP, dest=%s\n",longueur,port,nb_msg,hostName);
     for(int k = 0; k < nb_msg; k++)
     {
+        printf("SOURCE: Envoi n°%d (%d)",k+1,longueur);
+        
         construire_message(message,'a'+k%26,longueur);
+        afficher_message(message,longueur);
         sent= sendto(sock,message,longueur,0,(struct sockaddr*)&adr_distant,sizeof(adr_distant));
+
         //printf("Stp marche");
     }
 
