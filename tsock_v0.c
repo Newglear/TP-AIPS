@@ -47,6 +47,8 @@ void main (int argc, char **argv)
 			nb_message = atoi(optarg);
 			break;
 
+		case 'u':
+
 		default:
 			printf("usage: cmd [-p|-s][-n ##]\n");
 			break;
