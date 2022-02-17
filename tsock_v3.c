@@ -49,8 +49,7 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
     memcpy( (char*)&(adr_distant.sin_addr.s_addr),
                      hp->h_addr,
                      hp->h_length ) ;
-    longueur = 30; 
-    nb_msg = 10; 
+    
     int sent;
     char message[longueur] ;
     printf("SOURCE: lg_msg_emis= %d , port= %d, nb_evois= %d, TP =UDP, dest=%s\n",longueur,port,nb_msg,hostName);
@@ -105,9 +104,7 @@ void TCP_source(int port,int nb_msg, int longueur, char* hostName){
             printf("échec de création de connection\n") ;
             exit(1) ; 
         }
-
-    longueur = 30; 
-    nb_msg = 10; 
+        
     int sent;
     char *message= malloc(longueur*sizeof(char)) ;
     printf("SOURCE: lg_msg_emis= %d , port= %d, nb_evois= %d, TP =UDP, dest=%s\n",longueur,port,nb_msg,hostName);
@@ -159,8 +156,7 @@ void UDP_puit(int port,int nb_msg, int longueur, char* hostName){
     memcpy( (char*)&(adr_local.sin_addr.s_addr),
                      hp->h_addr,
                      hp->h_length ) ;
-    longueur = 30; 
-    nb_msg = 10; 
+
     char message[longueur] ;
     struct sockaddr_in adr_em; 
     memset((char*)&adr_em, 0, sizeof(adr_em)) ; /* reset */
@@ -168,12 +164,15 @@ void UDP_puit(int port,int nb_msg, int longueur, char* hostName){
     adr_em.sin_port = port ;
     int plg_adr_em=sizeof(adr_em);
     while(1){
+        int i = 0;
+        printf("PUITS: Reception n°%d (%d)",i,longueur);
         int r = recvfrom(sock, message, longueur,0,(struct sockaddr*)&adr_em,&plg_adr_em);
         if(r == -1){
-            printf("Echec de l'envoi\n");
+            printf("Echec de lecture\n");
             exit(1);
         }
         afficher_message(message,longueur);
+        i++;
     }
     
     if(close(sock)==-1){
@@ -224,11 +223,11 @@ void TCP_puit(int port,int nb_msg, int longueur, char* hostName){
             printf("échec de création de connection\n") ;
             exit(1) ; 
         }
-    longueur = 30; 
-    nb_msg = 10; 
+
     char* message = malloc(longueur*sizeof(char));
-   
+    int i = 1;
     while(1){
+        
         int r = read(co, message, longueur);
         if(r == -1){
             printf("Echec de lecture\n");
@@ -237,7 +236,10 @@ void TCP_puit(int port,int nb_msg, int longueur, char* hostName){
         if(r==0){
             break;
         }
+       
+        printf("PUITS: Reception n°%d (%d)",i,longueur);
         afficher_message(message,r);
+        i++;
     }
     
     if(close(sock)==-1){
@@ -253,7 +255,7 @@ void main (int argc, char **argv)
 	extern char *optarg;
 	extern int optind;
     int proto=1; 
-	int nb_message = -1; /* Nb de messages à envoyer ou à recevoir, par défaut : 10 en émission, infini en réception */
+	int nb_message = 10; /* Nb de messages à envoyer ou à recevoir, par défaut : 10 en émission, infini en réception */
     int lg_message = 30;
 	int source = -1 ; /* 0=puits, 1=source */
 	while ((c = getopt(argc, argv, "pusn:l:")) != -1) {
@@ -301,15 +303,14 @@ void main (int argc, char **argv)
 	else
 		printf("on est dans le puits\n");
 
-	if (nb_message != -1) {
+	if (nb_message < 0) {
 		if (source == 1)
 			printf("nb de tampons à envoyer : %d\n", nb_message);
 		else
 			printf("nb de tampons à recevoir : %d\n", nb_message);
 	} else {
 		if (source == 1) {
-;
-			printf("nb de tampons à envoyer = 10 par défaut\n");
+			printf("nb de tampons à envoyer = %d par défaut\n",nb_message);
             if(proto==0){
                 UDP_source(atoi(argv[argc-1]),nb_message,lg_message,argv[argc-2]);
             }else {
@@ -317,7 +318,7 @@ void main (int argc, char **argv)
             }
         }else if( source == 0){
             // Puit 
-			printf("nb de tampons à envoyer = 10 par défaut\n");
+			printf("nb de tampons à envoyer =  %d par défaut\n",nb_message);
             if(proto==0){
                 UDP_puit(atoi(argv[argc-1]),nb_message,lg_message,argv[argc-2]); // UDP 
             }else {
