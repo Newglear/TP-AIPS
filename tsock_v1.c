@@ -28,41 +28,44 @@ int i;
 for (i=0;i<lg;i++) printf("%c", message[i]); printf("\n");}
 
 void UDP_source(int port,int nb_msg, int longueur, char* hostName){ 
+
     int sock;
+    int lg_adr_distant = sizeof(adr_distant) ;
+    struct sockaddr_in adr_distant; 
+    adr_distant.sin_family = AF_INET ;
+    adr_distant.sin_port = port ;
+    struct hostent *hp ;
+    int sent;
+    char message[longueur] ;
+
+    longueur = 30; 
+    nb_msg = 10; 
+
     if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
         { 
             printf("échec de création du socket\n") ;
             exit(1) ; 
         }
-    struct sockaddr_in adr_distant; 
+    
     memset((char*)&adr_distant, 0, sizeof(adr_distant)) ; /* reset */
-    adr_distant.sin_family = AF_INET ;
-    adr_distant.sin_port = port ;
-    int lg_adr_distant = sizeof(adr_distant) ;
-
-    struct hostent *hp ;
+    
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
         printf("erreur gethostbyname\n") ;
         exit(1) ; 
-        }
-    memcpy( (char*)&(adr_distant.sin_addr.s_addr),
-                     hp->h_addr,
-                     hp->h_length ) ;
-    longueur = 30; 
-    nb_msg = 10; 
-    int sent;
-    char message[longueur] ;
+    }
+    memcpy( (char*)&(adr_distant.sin_addr.s_addr),hp->h_addr,hp->h_length ) ;
+    
     printf("SOURCE: lg_msg_emis= %d , port= %d, nb_evois= %d, TP =UDP, dest=%s\n",longueur,port,nb_msg,hostName);
+
     for(int k = 0; k < nb_msg; k++)
     {
         printf("SOURCE: Envoi n°%d (%d)",k+1,longueur);
-        
+
         construire_message(message,'a'+k%26,longueur);
         afficher_message(message,longueur);
         sent= sendto(sock,message,longueur,0,(struct sockaddr*)&adr_distant,sizeof(adr_distant));
 
-        //printf("Stp marche");
     }
 
     if(close(sock)==-1){
@@ -73,40 +76,48 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
 
 }
 void UDP_puit(int port,int nb_msg, int longueur, char* hostName){ 
+    
     int sock;
+    struct sockaddr_in adr_local; 
+    adr_local.sin_family = AF_INET ;
+    adr_local.sin_port = port ;
+    int lg_adr_local = sizeof(adr_local) ;
+    struct hostent *hp ;
+
+    char message[longueur] ;
+    struct sockaddr_in adr_em; 
+    int plg_adr_em;
+
+    memset((char*)&adr_em, 0, sizeof(adr_em)) ; /* reset */
+    adr_em.sin_family = AF_INET ;
+    adr_em.sin_port = port ;
+    
+    memcpy( (char*)&(adr_local.sin_addr.s_addr),hp->h_addr,hp->h_length ) ;
+    longueur = 30; 
+    nb_msg = 10; 
+
     if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
         { 
             printf("échec de création du socket\n") ;
             exit(1) ; 
         }
-    struct sockaddr_in adr_local; 
+    
     memset((char*)&adr_local, 0, sizeof(adr_local)) ; /* reset */
-    adr_local.sin_family = AF_INET ;
-    adr_local.sin_port = port ;
-    int lg_adr_local = sizeof(adr_local) ;
+    
     if (bind (sock, (struct sockaddr *)&adr_local, lg_adr_local) == -1)
     { 
         printf("échec du bind\n") ;
         exit(1) ; 
     }
 
-    struct hostent *hp ;
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
         printf("erreur gethostbyname\n") ;
         exit(1) ; 
         }
-    memcpy( (char*)&(adr_local.sin_addr.s_addr),
-                     hp->h_addr,
-                     hp->h_length ) ;
-    longueur = 30; 
-    nb_msg = 10; 
-    char message[longueur] ;
-    struct sockaddr_in adr_em; 
-    memset((char*)&adr_em, 0, sizeof(adr_em)) ; /* reset */
-    adr_em.sin_family = AF_INET ;
-    adr_em.sin_port = port ;
-    int plg_adr_em;
+    
+    
+    
     while(1){
         int read = recvfrom(sock, message, longueur,0,(struct sockaddr*)&adr_em,&plg_adr_em);
         afficher_message(message,longueur);
@@ -128,6 +139,7 @@ void main (int argc, char **argv)
     int proto=0; 
 	int nb_message = -1; /* Nb de messages à envoyer ou à recevoir, par défaut : 10 en émission, infini en réception */
 	int source = -1 ; /* 0=puits, 1=source */
+    
 	while ((c = getopt(argc, argv, "pn:s")) != -1) {
 		switch (c) {
 		case 'p':
