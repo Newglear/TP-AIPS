@@ -20,12 +20,31 @@ données du réseau */
 
 void construire_message(char *message, char motif, int lg) {
 int i;
-for (i=0;i<lg;i++) message[i] = motif;}
+for (i=0;i<lg;i++) message[i] = motif;
+}
+
+void format(int num){
+    if(num >= 10000){
+        printf("%d",num);
+    }else if(num<10000 && num >= 1000){
+        printf("-%d",num);
+    }else if(num<1000 && num >= 100){
+        printf("--%d",num);
+    }else if(num<100 && num >= 10){
+        printf("---%d",num);
+    }else if(num<10 && num >= 0){
+        printf("----%d",num);
+    }
+}
 
 void afficher_message(char *message, int lg) {
 int i;
 //printf("message construit : ");
-for (i=0;i<lg;i++) printf("%c", message[i]); printf("\n");}
+    for (i=0;i<lg;i++) 
+        printf("%c", message[i]); 
+        printf("]\n");
+}
+
 
 void UDP_source(int port,int nb_msg, int longueur, char* hostName){ 
     int sock;
@@ -55,9 +74,10 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
     printf("SOURCE: lg_msg_emis= %d , port= %d, nb_evois= %d, TP =UDP, dest=%s\n",longueur,port,nb_msg,hostName);
     for(int k = 0; k < nb_msg; k++)
     {
-        printf("SOURCE: Envoi n°%d (%d)",k+1,longueur);
+        printf("SOURCE: Envoi n°%d (%d) [",k+1,longueur);
         
         construire_message(message,'a'+k%26,longueur);
+        format(k+1);
         afficher_message(message,longueur);
         sent= sendto(sock,message,longueur,0,(struct sockaddr*)&adr_distant,sizeof(adr_distant));
         if(sent == -1){
@@ -66,7 +86,7 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
         }
         //printf("Stp marche");
     }
-
+    printf("SOURCE: fin\n");
     if(close(sock)==-1){
         printf("Echec de destruction du socket \n");
         exit(1);
@@ -110,9 +130,10 @@ void TCP_source(int port,int nb_msg, int longueur, char* hostName){
     printf("SOURCE: lg_msg_emis= %d , port= %d, nb_evois= %d, TP =UDP, dest=%s\n",longueur,port,nb_msg,hostName);
     for(int k = 0; k < nb_msg; k++)
     {
-        printf("SOURCE: Envoi n°%d (%d)",k+1,longueur);
+        printf("SOURCE: Envoi n°%d (%d) [",k+1,longueur);
         
         construire_message(message,'a'+k%26,longueur);
+        format(k+1);
         afficher_message(message,longueur);
         sent= write(sock,message,longueur);
         if(sent == -1){
@@ -122,7 +143,7 @@ void TCP_source(int port,int nb_msg, int longueur, char* hostName){
 
         //printf("Stp marche");
     }
-
+    printf("SOURCE: fin\n");
     if(close(sock)==-1){
         printf("Echec de destruction du socket \n");
         exit(1);
@@ -163,18 +184,24 @@ void UDP_puit(int port,int nb_msg, int longueur, char* hostName){
     adr_em.sin_family = AF_INET ;
     adr_em.sin_port = port ;
     int plg_adr_em=sizeof(adr_em);
+    int i = 1;
     while(1){
-        int i = 0;
-        printf("PUITS: Reception n°%d (%d)",i,longueur);
+        
+        printf("PUITS: Reception n°%d (%d)[",i,longueur);
         int r = recvfrom(sock, message, longueur,0,(struct sockaddr*)&adr_em,&plg_adr_em);
         if(r == -1){
             printf("Echec de lecture\n");
             exit(1);
         }
-        afficher_message(message,longueur);
+        if(r == 0){
+            break;
+        }
+       
+        format(i);
+        afficher_message(message,r);
         i++;
     }
-    
+    printf("PUITS: fin\n");
     if(close(sock)==-1){
         printf("Echec de destruction du socket \n");
         exit(1);
@@ -237,7 +264,8 @@ void TCP_puit(int port,int nb_msg, int longueur, char* hostName){
             break;
         }
        
-        printf("PUITS: Reception n°%d (%d)",i,longueur);
+        printf("PUITS: Reception n°%d (%d) [",i,longueur);
+        format(i);
         afficher_message(message,r);
         i++;
     }
@@ -303,11 +331,11 @@ void main (int argc, char **argv)
 	else
 		printf("on est dans le puits\n");
 
-	if (nb_message < 0) {
+	if (nb_message < 0 || nb_message >= 100000) {
 		if (source == 1)
-			printf("nb de tampons à envoyer : %d\n", nb_message);
+			printf("nb de tampons à envoyer : %d\n Trop  de messages \n", nb_message);
 		else
-			printf("nb de tampons à recevoir : %d\n", nb_message);
+			printf("nb de tampons à recevoir : %d\n Trop  de messages \n", nb_message);
 	} else {
 		if (source == 1) {
 			printf("nb de tampons à envoyer = %d par défaut\n",nb_message);
