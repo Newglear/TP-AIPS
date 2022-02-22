@@ -18,6 +18,8 @@ données du réseau */
 /* pour la gestion des erreurs */
 #include <errno.h>
 
+
+/*Construction, formatage et affichage des messages*/
 void construire_message(char *message, char motif, int lg) {
 int i;
 for (i=0;i<lg;i++) message[i] = motif;
@@ -39,18 +41,18 @@ void format(int num){
 
 void afficher_message(char *message, int lg) {
 int i;
-//printf("message construit : ");
     for (i=0;i<lg;i++) 
         printf("%c", message[i]); 
         printf("]\n");
 }
 
 
+/* UDP source */
 void UDP_source(int port,int nb_msg, int longueur, char* hostName){ 
     int sock;
     if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
         { 
-            printf("échec de création du socket\n") ;
+            printf("Echec de création du socket\n") ;
             exit(1) ; 
         }
     struct sockaddr_in adr_distant; 
@@ -62,7 +64,7 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
     struct hostent *hp ;
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
-        printf("erreur gethostbyname\n") ;
+        printf("Erreur gethostbyname\n") ;
         exit(1) ; 
         }
     memcpy( (char*)&(adr_distant.sin_addr.s_addr),
@@ -84,21 +86,22 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
             printf("Echec de l'envoi\n");
             exit(1);
         }
-        //printf("Stp marche");
     }
+	
     printf("SOURCE: fin\n");
     if(close(sock)==-1){
         printf("Echec de destruction du socket \n");
         exit(1);
     }
-
-
 }
+
+
+/*TCP source */
 void TCP_source(int port,int nb_msg, int longueur, char* hostName){ 
     int sock;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         { 
-            printf("échec de création du socket\n") ;
+            printf("Echec de création du socket\n") ;
             exit(1) ; 
         }
     struct sockaddr_in adr_distant; 
@@ -110,18 +113,18 @@ void TCP_source(int port,int nb_msg, int longueur, char* hostName){
     struct hostent *hp ;
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
-        printf("erreur gethostbyname\n") ;
+        printf("Erreur gethostbyname\n") ;
         exit(1) ; 
         }
     memcpy( (char*)&(adr_distant.sin_addr.s_addr),
                      hp->h_addr,
                      hp->h_length ) ;
 
-    // Connection au serveur
+    // Connexion au serveur
     int co=-1; 
     if ((co=connect(sock,(struct sockaddr*)&adr_distant,sizeof(adr_distant))) == -1)
         { 
-            printf("échec de création de connection\n") ;
+            printf("Echec de création de connexion\n") ;
             exit(1) ; 
         }
         
@@ -140,8 +143,6 @@ void TCP_source(int port,int nb_msg, int longueur, char* hostName){
             printf("Echec de l'envoi\n");
             exit(1);
         }
-
-        //printf("Stp marche");
     }
     printf("SOURCE: fin\n");
     if(close(sock)==-1){
@@ -150,11 +151,13 @@ void TCP_source(int port,int nb_msg, int longueur, char* hostName){
     }
 }
 
+
+/*UDP puits*/
 void UDP_puit(int port,int nb_msg, int longueur, char* hostName){ 
     int sock;
     if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
         { 
-            printf("échec de création du socket\n") ;
+            printf("Echec de création du socket\n") ;
             exit(1) ; 
         }
     struct sockaddr_in adr_local; 
@@ -164,14 +167,14 @@ void UDP_puit(int port,int nb_msg, int longueur, char* hostName){
     int lg_adr_local = sizeof(adr_local) ;
     if (bind (sock, (struct sockaddr *)&adr_local, lg_adr_local) == -1)
     { 
-        printf("échec du bind\n") ;
+        printf("Echec du bind\n") ;
         exit(1) ; 
     }
 
     struct hostent *hp ;
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
-        printf("erreur gethostbyname\n") ;
+        printf("Erreur gethostbyname\n") ;
         exit(1) ; 
         }
     memcpy( (char*)&(adr_local.sin_addr.s_addr),
@@ -206,32 +209,33 @@ void UDP_puit(int port,int nb_msg, int longueur, char* hostName){
         printf("Echec de destruction du socket \n");
         exit(1);
     }
-
-
 }
+
+
+/* TCP puits */
 void TCP_puit(int port,int nb_msg, int longueur, char* hostName){ 
     int sock;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         { 
-            printf("échec de création du socket\n") ;
+            printf("Echec de création du socket\n") ;
             exit(1) ; 
         }
-    struct sockaddr_in adr_local
-    ; 
+    struct sockaddr_in adr_local ;
+	
     memset((char*)&adr_local, 0, sizeof(adr_local)) ; /* reset */
     adr_local.sin_family = AF_INET ;
     adr_local.sin_port = port ;
     int lg_adr_local = sizeof(adr_local) ;
     if (bind (sock, (struct sockaddr *)&adr_local, lg_adr_local) == -1)
     { 
-        printf("échec du bind\n") ;
+        printf("Echec du bind\n") ;
         exit(1) ; 
     }
 
     struct hostent *hp ;
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
-        printf("erreur gethostbyname\n") ;
+        printf("Erreur gethostbyname\n") ;
         exit(1) ; 
         }
     memcpy( (char*)&(adr_local.sin_addr.s_addr),
@@ -247,7 +251,7 @@ void TCP_puit(int port,int nb_msg, int longueur, char* hostName){
     int co=accept(sock,(struct sockaddr*)&adr_em,&plg_adr_em); 
     if (co == -1)
         { 
-            printf("échec de création de connection\n") ;
+            printf("Echec de création de connexion\n") ;
             exit(1) ; 
         }
 
@@ -277,6 +281,8 @@ void TCP_puit(int port,int nb_msg, int longueur, char* hostName){
     printf("PUITS: fin\n");
 }
 
+
+/*Fonction principale*/
 void main (int argc, char **argv)
 {
 	int c;
@@ -307,14 +313,13 @@ void main (int argc, char **argv)
 		case 'n':
 			nb_message = atoi(optarg);
 			break;
-        case 'l':
+        	case 'l':
 			lg_message = atoi(optarg);
 			break;
 		case 'u':
-            proto = 0;
-            break; 
+		        proto = 0;
+		        break; 
 
-			
 		default:
 			printf("usage: cmd [-p|-s][-n ##]\n");
 			break;
@@ -340,23 +345,21 @@ void main (int argc, char **argv)
 		if (source == 1) {
 			printf("nb de tampons à envoyer = %d par défaut\n",nb_message);
             if(proto==0){
-                UDP_source(atoi(argv[argc-1]),nb_message,lg_message,argv[argc-2]);
+                UDP_source(atoi(argv[argc-1]),nb_message,lg_message,argv[argc-2]); //UDP source
             }else {
-                TCP_source(atoi(argv[argc-1]),nb_message,lg_message,argv[argc-2]);//tcp
+                TCP_source(atoi(argv[argc-1]),nb_message,lg_message,argv[argc-2]); //TCP source
             }
         }else if( source == 0){
             // Puit 
 			printf("nb de tampons à envoyer =  %d par défaut\n",nb_message);
             if(proto==0){
-                UDP_puit(atoi(argv[argc-1]),nb_message,lg_message,argv[argc-2]); // UDP 
+                UDP_puit(atoi(argv[argc-1]),nb_message,lg_message,argv[argc-2]); //UDP puits
             }else {
-                TCP_puit(atoi(argv[argc-1]),nb_message,lg_message,argv[argc-2]); //tcp
+                TCP_puit(atoi(argv[argc-1]),nb_message,lg_message,argv[argc-2]); //TCP puits
             }
 
         } else
 		printf("nb de tampons à envoyer = infini\n");
-
 	}
     
 }
-
