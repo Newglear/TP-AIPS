@@ -18,6 +18,7 @@ données du réseau */
 /* pour la gestion des erreurs */
 #include <errno.h>
 
+/* Affichage et construction des messages*/
 void construire_message(char *message, char motif, int lg) {
 int i;
 for (i=0;i<lg;i++) message[i] = motif;}
@@ -27,6 +28,8 @@ int i;
 //printf("message construit : ");
 for (i=0;i<lg;i++) printf("%c", message[i]); printf("\n");}
 
+
+/*UDP source*/
 void UDP_source(int port,int nb_msg, int longueur, char* hostName){ 
 
     int sock;
@@ -44,7 +47,7 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
 
     if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
         { 
-            printf("échec de création du socket\n") ;
+            printf("Echec de création du socket\n") ;
             exit(1) ; 
         }
     
@@ -52,7 +55,7 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
     
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
-        printf("erreur gethostbyname\n") ;
+        printf("Erreur gethostbyname\n") ;
         exit(1) ; 
     }
     memcpy( (char*)&(adr_distant.sin_addr.s_addr),hp->h_addr,hp->h_length ) ;
@@ -61,21 +64,21 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
 
     for(int k = 0; k < nb_msg; k++)
     {
-        printf("SOURCE: Envoi n°%d (%d)",k+1,longueur);
-
+        printf("SOURCE: Envoi n°%d (%d)\n",k+1,longueur);
+        
         construire_message(message,'a'+k%26,longueur);
         afficher_message(message,longueur);
         sent= sendto(sock,message,longueur,0,(struct sockaddr*)&adr_distant,sizeof(adr_distant));
-
     }
 
     if(close(sock)==-1){
         printf("Echec de destruction du socket \n");
         exit(1);
     }
-
-
 }
+
+
+/*UDP puit*/
 void UDP_puit(int port,int nb_msg, int longueur, char* hostName){ 
     
     int sock;
@@ -99,7 +102,7 @@ void UDP_puit(int port,int nb_msg, int longueur, char* hostName){
 
     if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
         { 
-            printf("échec de création du socket\n") ;
+            printf("Echec de création du socket\n") ;
             exit(1) ; 
         }
     
@@ -107,13 +110,13 @@ void UDP_puit(int port,int nb_msg, int longueur, char* hostName){
     
     if (bind (sock, (struct sockaddr *)&adr_local, lg_adr_local) == -1)
     { 
-        printf("échec du bind\n") ;
+        printf("Echec du bind\n") ;
         exit(1) ; 
     }
 
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
-        printf("erreur gethostbyname\n") ;
+        printf("Erreur gethostbyname\n") ;
         exit(1) ; 
         }
     
@@ -128,10 +131,10 @@ void UDP_puit(int port,int nb_msg, int longueur, char* hostName){
         printf("Echec de destruction du socket \n");
         exit(1);
     }
-
-
 }
 
+
+/* Fonction principale */
 void main (int argc, char **argv)
 {
 	int c;
@@ -164,10 +167,9 @@ void main (int argc, char **argv)
 			break;
 
 		case 'u':
-            proto = 0;
-            break; 
+			proto = 0;
+		        break; 
 
-			
 		default:
 			printf("usage: cmd [-p|-s][-n ##]\n");
 			break;
@@ -197,7 +199,7 @@ void main (int argc, char **argv)
             if(proto==0){
                 UDP_source(atoi(argv[argc-1]),nb_message,longueur,argv[argc-2]);
             }else {
-                // TCP 
+                // TCP (voir v2)
             }
         }else if( source == 0){
             // Puit 
@@ -207,13 +209,11 @@ void main (int argc, char **argv)
             if(proto==0){
                 UDP_puit(atoi(argv[argc-1]),nb_message,longueur,argv[argc-2]); // UDP 
             }else {
-                // TCP 
+                // TCP (voir v2)
             }
 
         } else
 		printf("nb de tampons à envoyer = infini\n");
-
 	}
     
 }
-
