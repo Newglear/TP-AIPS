@@ -2,7 +2,7 @@
 
 GOUTTE Léonie | ROBERT Gwenael | 3MicD 
 
-Commande de génération d'éxécutable: gcc -o tsock tsock_v.c -Wall -Werror
+Commande de génération d'éxécutable: gcc -o tsock tsock_v.c
 
 Avancement du TP: 
 
