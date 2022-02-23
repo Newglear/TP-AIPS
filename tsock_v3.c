@@ -48,18 +48,21 @@ int i;
 
 void UDP_source(int port,int nb_msg, int longueur, char* hostName){ 
     int sock;
-    if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-        { 
-            printf("échec de création du socket\n") ;
-            exit(1) ; 
-        }
     struct sockaddr_in adr_distant; 
     memset((char*)&adr_distant, 0, sizeof(adr_distant)) ; /* reset */
     adr_distant.sin_family = AF_INET ;
     adr_distant.sin_port = port ;
     int lg_adr_distant = sizeof(adr_distant) ;
-
     struct hostent *hp ;
+    int sent;
+    char message[longueur] ;
+
+    if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+        { 
+            printf("échec de création du socket\n") ;
+            exit(1) ; 
+        }
+    
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
         printf("erreur gethostbyname\n") ;
@@ -68,9 +71,7 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
     memcpy( (char*)&(adr_distant.sin_addr.s_addr),
                      hp->h_addr,
                      hp->h_length ) ;
-    
-    int sent;
-    char message[longueur] ;
+
     printf("SOURCE: lg_msg_emis= %d , port= %d, nb_evois= %d, TP =UDP, dest=%s\n",longueur,port,nb_msg,hostName);
     for(int k = 0; k < nb_msg; k++)
     {
@@ -96,18 +97,18 @@ void UDP_source(int port,int nb_msg, int longueur, char* hostName){
 }
 void TCP_source(int port,int nb_msg, int longueur, char* hostName){ 
     int sock;
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-        { 
-            printf("échec de création du socket\n") ;
-            exit(1) ; 
-        }
     struct sockaddr_in adr_distant; 
     memset((char*)&adr_distant, 0, sizeof(adr_distant)) ; /* reset */
     adr_distant.sin_family = AF_INET ;
     adr_distant.sin_port = port ;
     int lg_adr_distant = sizeof(adr_distant) ;
-
     struct hostent *hp ;
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+        { 
+            printf("échec de création du socket\n") ;
+            exit(1) ; 
+        }
+    
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
         printf("erreur gethostbyname\n") ;
@@ -119,14 +120,16 @@ void TCP_source(int port,int nb_msg, int longueur, char* hostName){
 
     // Connection au serveur
     int co=-1; 
+    int sent;
+    char *message= malloc(longueur*sizeof(char)) ;
+
     if ((co=connect(sock,(struct sockaddr*)&adr_distant,sizeof(adr_distant))) == -1)
         { 
             printf("échec de création de connection\n") ;
             exit(1) ; 
         }
         
-    int sent;
-    char *message= malloc(longueur*sizeof(char)) ;
+    
     printf("SOURCE: lg_msg_emis= %d , port= %d, nb_evois= %d, TP =UDP, dest=%s\n",longueur,port,nb_msg,hostName);
     for(int k = 0; k < nb_msg; k++)
     {
@@ -152,16 +155,24 @@ void TCP_source(int port,int nb_msg, int longueur, char* hostName){
 
 void UDP_puit(int port,int nb_msg, int longueur, char* hostName){ 
     int sock;
-    if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-        { 
-            printf("échec de création du socket\n") ;
-            exit(1) ; 
-        }
     struct sockaddr_in adr_local; 
     memset((char*)&adr_local, 0, sizeof(adr_local)) ; /* reset */
     adr_local.sin_family = AF_INET ;
     adr_local.sin_port = port ;
     int lg_adr_local = sizeof(adr_local) ;
+    char message[longueur] ;
+    struct sockaddr_in adr_em; 
+    memset((char*)&adr_em, 0, sizeof(adr_em)) ; /* reset */
+    adr_em.sin_family = AF_INET ;
+    adr_em.sin_port = port ;
+    int plg_adr_em=sizeof(adr_em);
+
+    if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+        { 
+            printf("échec de création du socket\n") ;
+            exit(1) ; 
+        }
+    
     if (bind (sock, (struct sockaddr *)&adr_local, lg_adr_local) == -1)
     { 
         printf("échec du bind\n") ;
@@ -178,12 +189,7 @@ void UDP_puit(int port,int nb_msg, int longueur, char* hostName){
                      hp->h_addr,
                      hp->h_length ) ;
 
-    char message[longueur] ;
-    struct sockaddr_in adr_em; 
-    memset((char*)&adr_em, 0, sizeof(adr_em)) ; /* reset */
-    adr_em.sin_family = AF_INET ;
-    adr_em.sin_port = port ;
-    int plg_adr_em=sizeof(adr_em);
+    
     int i = 1;
     while(1){
         
@@ -211,24 +217,28 @@ void UDP_puit(int port,int nb_msg, int longueur, char* hostName){
 }
 void TCP_puit(int port,int nb_msg, int longueur, char* hostName){ 
     int sock;
+    struct sockaddr_in adr_local; 
+    memset((char*)&adr_local, 0, sizeof(adr_local)) ; /* reset */
+    adr_local.sin_family = AF_INET ;
+    adr_local.sin_port = port ;
+    int lg_adr_local = sizeof(adr_local) ;
+    struct hostent *hp ;
+    struct sockaddr_in adr_em; 
+    int plg_adr_em= sizeof(adr_em);
+
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         { 
             printf("échec de création du socket\n") ;
             exit(1) ; 
         }
-    struct sockaddr_in adr_local
-    ; 
-    memset((char*)&adr_local, 0, sizeof(adr_local)) ; /* reset */
-    adr_local.sin_family = AF_INET ;
-    adr_local.sin_port = port ;
-    int lg_adr_local = sizeof(adr_local) ;
+    
     if (bind (sock, (struct sockaddr *)&adr_local, lg_adr_local) == -1)
     { 
         printf("échec du bind\n") ;
         exit(1) ; 
     }
 
-    struct hostent *hp ;
+    
     if ((hp = gethostbyname(hostName)) == NULL)
     { 
         printf("erreur gethostbyname\n") ;
@@ -238,20 +248,18 @@ void TCP_puit(int port,int nb_msg, int longueur, char* hostName){
                      hp->h_addr,
                      hp->h_length ) ;
 
-    struct sockaddr_in adr_em; 
-    //memset((char*)&adr_em, 0, sizeof(adr_em)) ; /* reset */
-
-    int plg_adr_em= sizeof(adr_em);
+   
     // Connexion 
     int wait= listen(sock,5);
     int co=accept(sock,(struct sockaddr*)&adr_em,&plg_adr_em); 
+    char* message = malloc(longueur*sizeof(char));
+   
     if (co == -1)
         { 
             printf("échec de création de connection\n") ;
             exit(1) ; 
         }
 
-    char* message = malloc(longueur*sizeof(char));
     int i = 1;
     while(1){
         

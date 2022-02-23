@@ -30,10 +30,11 @@ for (i=0;i<lg;i++) printf("%c", message[i]); printf("\n");}
 void UDP_source(int port,int nb_msg, int longueur, char* hostName){ 
 
     int sock;
-    int lg_adr_distant = sizeof(adr_distant) ;
+    
     struct sockaddr_in adr_distant; 
     adr_distant.sin_family = AF_INET ;
     adr_distant.sin_port = port ;
+    int lg_adr_distant = sizeof(adr_distant) ;
     struct hostent *hp ;
     int sent;
     char message[longueur] ;
